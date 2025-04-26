@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{admin/layout :: layout(~{::div[@id='mainContent']})}">
+<body>
+<div id="mainContent">
+    <h2>⬇️ 사용량 요약 / 다운로드</h2>
+
+    <form method="get" th:action="@{/admin/export}">
+        <label>시작일: <input type="date" name="from" th:value="${from}" required /></label>
+        <label>종료일: <input type="date" name="to" th:value="${to}" required /></label>
+        <button type="submit" class="btn btn-primary">조회</button>
+    </form>
+
+    <div th:if="${summaries}">
+        <h4 class="mt-4">조회 결과</h4>
+        <table class="table table-bordered">
+            <thead>
+            <tr>
+                <th>날짜</th>
+                <th>모델명</th>
+                <th>요청 수</th>
+                <th>총 토큰</th>
+                <th>평균 응답시간 (ms)</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="summary : ${summaries}">
+                <td th:text="${summary.date}">2025-04-01</td>
+                <td th:text="${summary.model}">gpt</td>
+                <td th:text="${summary.count}">5</td>
+                <td th:text="${summary.totalTokens}">1024</td>
+                <td th:text="${summary.averageElapsed}">150.23</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <form method="get" th:action="@{/usage/export}">
+            <input type="hidden" name="from" th:value="${from}"/>
+            <input type="hidden" name="to" th:value="${to}"/>
+            <button type="submit" class="btn btn-success">CSV 다운로드</button>
+        </form>
+    </div>
+</div>
+</body>
+</html>

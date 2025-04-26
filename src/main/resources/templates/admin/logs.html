@@ -1,0 +1,68 @@
+<!-- 📄 추론 로그 HTML (필터 포함) -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{admin/layout :: layout(~{::body})}">
+<body>
+<div>
+    <h2 class="mb-4">📜 추론 로그</h2>
+
+    <!-- 🔍 필터 영역 -->
+    <form method="get" th:action="@{/admin/logs}" class="row g-3 mb-4">
+        <div class="col-md-3">
+            <label for="provider" class="form-label">제공자</label>
+            <select id="provider" name="provider" class="form-select" th:value="${provider}">
+                <option value="">-- 전체 --</option>
+                <option value="Groq">Groq</option>
+                <option value="Together">Together</option>
+                <option value="OpenAI">OpenAI</option>
+                <option value="Anthropic">Anthropic</option>
+                <option value="Google">Google</option>
+            </select>
+        </div>
+
+        <!-- 🔹 모델 이름 입력 -->
+        <div class="col-md-3">
+            <label for="model" class="form-label">모델</label>
+            <input type="text"
+                   id="model"
+                   name="model"
+                   class="form-control"
+                   th:value="${model}"
+                   placeholder="예: llama3-8b-8192"> <!-- 선택값 유지 -->
+        </div>
+
+        <div class="col-md-3 align-self-end">
+            <button type="submit" class="btn btn-primary">검색</button>
+        </div>
+    </form>
+
+    <!-- 📋 로그 테이블 -->
+    <table class="table table-striped table-hover">
+        <thead class="table-light">
+        <tr>
+            <th>ID</th>
+            <th>프로젝트</th>
+            <th>제공자</th>
+            <th>모델</th>
+            <th>쿼리</th>
+            <th>결과</th>
+            <th>응답 시간</th>
+            <th>생성일</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="log : ${logs}">
+            <td th:text="${log.id}">1</td>
+            <td th:text="${log.project}">project</td>
+            <td th:text="${log.provider}">provider</td>
+            <td th:text="${log.model}">model</td>
+            <td th:text="${log.query}">query</td>
+            <td th:text="${log.result}">result</td>
+            <td th:text="${log.elapsed}">0ms</td>
+            <td th:text="${#temporals.format(log.createdAt, 'yyyy-MM-dd HH:mm')}">date</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>

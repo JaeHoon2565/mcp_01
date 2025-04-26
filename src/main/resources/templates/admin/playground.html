@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{admin/layout :: layout(~{::body})}">
+<body>
+<div>
+    <h1>🧪 모델 실험</h1>
+
+    <!-- 🔹 제공자 선택 -->
+    <div class="mb-3">
+        <label class="form-label">제공자:</label>
+        <select id="providerSelect" class="form-select" required onchange="onProviderChange()">
+            <option value="" disabled selected>-- 제공자를 선택하세요 --</option>
+            <option th:each="entry : ${groupedModels}"
+                    th:value="${entry.key}"
+                    th:text="${entry.key}"></option>
+        </select>
+    </div>
+
+    <!-- 🔹 모델 선택 (제공자에 따라 동적 변경됨) -->
+    <div class="mb-3">
+        <label class="form-label">모델명:</label>
+        <select id="modelSelect" class="form-select" required>
+            <option value="" disabled selected>-- 먼저 제공자를 선택하세요 --</option>
+        </select>
+    </div>
+
+    <!-- 🔹 컨텍스트 세트 선택 -->
+    <div class="mb-3">
+        <label class="form-label">컨텍스트 세트:</label>
+        <select id="contextSelect" class="form-select" required>
+            <option value="" disabled selected>-- 역할/상황을 선택하세요 --</option>
+            <option th:each="set : ${contextSets}"
+                    th:value="${set.id}"
+                    th:text="${set.name} + ' | ' + ${set.role} + ' | ' + ${set.tone}"></option>
+        </select>
+    </div>
+
+    <!-- 🔹 사용자 질문 입력 -->
+    <div class="mb-3">
+        <label class="form-label">프롬프트:</label>
+        <textarea class="form-control" id="query" rows="5"
+                  placeholder="예: DB 설계에 어떤 컬럼이 필요할까?" required></textarea>
+    </div>
+
+    <button class="btn btn-primary" onclick="sendRequest()">실행</button>
+
+    <!-- 🔹 결과 영역 -->
+    <div id="resultBox" class="mt-4" style="display:none">
+        <h3> 결과</h3>
+        <pre id="resultText" class="bg-light p-3 border rounded"></pre>
+    </div>
+
+    <!-- 🔹 에러 영역 -->
+    <div id="errorBox" class="alert alert-danger mt-3" style="display:none"></div>
+</div>
+
+<!-- ✅ 모델 전체 리스트 (자바스크립트용) -->
+<script th:inline="javascript">
+    const modelMap = /*[[${groupedModels}]]*/ {};
+</script>
+
+<!-- ✅ 자바스크립트 로직 -->
+<script>
+    function onProviderChange() {
+        const provider = document.getElementById('providerSelect').value;
+        const modelSelect = document.getElementById('modelSelect');
+
+        // 초기화
+        modelSelect.innerHTML = '<option disabled selected>-- 모델을 선택하세요 --</option>';
+
+        const models = modelMap[provider];
+        if (models) {
+            models.forEach(m => {
+                const opt = document.createElement("option");
+                opt.value = m.name;
+                opt.text = m.name;
+                modelSelect.appendChild(opt);
+            });
+        }
+    }
+
+    async function sendRequest() {
+        const provider = document.getElementById('providerSelect').value;
+        const model = document.getElementById('modelSelect').value;
+        const contextSetId = document.getElementById('contextSelect').value;
+        const query = document.getElementById('query').value;
+
+        const payload = {
+            project: "playground",
+            provider: provider,
+            model: model,
+            query: query,
+            contextSetId: contextSetId
+        };
+
+        try {
+            const res = await fetch('/infer', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            });
+
+            if (!res.ok) throw new Error("서버 오류 발생");
+
+            const data = await res.json();
+            document.getElementById('resultBox').style.display = 'block';
+            document.getElementById('resultText').innerText = data.result;
+            document.getElementById('errorBox').style.display = 'none';
+
+        } catch (e) {
+            document.getElementById('errorBox').style.display = 'block';
+            document.getElementById('errorBox').innerText = '❌ 오류: ' + e.message;
+            document.getElementById('resultBox').style.display = 'none';
+        }
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+.model-card {
+    border: 1px solid #ccc;
+    border-radius: 15px;
+    padding: 20px;
+    margin: 10px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.model-card:hover {
+    background-color: #f8f9fa;
+    transform: scale(1.03);
+}

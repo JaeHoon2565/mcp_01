@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{admin/layout :: layout(~{::#content})}">
+
+<body>
+<div id="content">
+
+    <h2>📊 오늘의 모델 호출 통계</h2>
+    <div th:each="stat : ${stats}">
+        <p>
+            <strong th:text="${stat.model}">모델명</strong>:
+            <span th:text="${stat.count}">0</span>회 호출
+        </p>
+    </div>
+
+    <hr/>
+
+    <h3>사용 가능한 모델 목록</h3>
+
+    <div class="accordion" id="modelAccordion">
+        <div th:each="group, iter : ${modelGroups}" class="accordion-item">
+            <h2 class="accordion-header" th:id="'heading__' + ${iter.index}">
+                <button class="accordion-button collapsed"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        th:data-bs-target="'#collapse__' + ${iter.index}"
+                        th:aria-controls="'collapse__' + ${iter.index}"
+                        aria-expanded="false">
+                    <span th:text="${group.key}">제공자 이름</span>
+                </button>
+            </h2>
+
+            <div class="accordion-collapse collapse"
+                 th:id="'collapse__' + ${iter.index}"
+                 th:aria-labelledby="'heading__' + ${iter.index}"
+                 data-bs-parent="#modelAccordion">
+
+                <div class="accordion-body">
+                    <div class="row mb-3">
+                        <div class="col-md-3 mb-2" th:each="model : ${group.value}">
+                            <div class="model-card" th:text="${model.name}">모델 이름</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- ✅ 이 위치 중요! 반드시 body 안 *맨 아래*에 있어야 함 -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

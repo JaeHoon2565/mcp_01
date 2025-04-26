@@ -1,0 +1,50 @@
+<!-- templates/admin/layout.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:fragment="layout(content)">
+<head>
+    <meta charset="UTF-8">
+    <title>MCP 관리자</title>
+    <link href="/css/admin.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark px-4">
+    <a class="navbar-brand" href="/admin">MCP 관리자</a>
+</nav>
+
+<div class="container-fluid mt-3">
+    <div class="row">
+        <div class="col-md-2">
+            <div class="list-group">
+                <a href="/admin/dashboard" class="list-group-item list-group-item-action">📊 대시보드</a>
+                <a href="/admin/playground" class="list-group-item list-group-item-action">🧪 실험</a>
+                <a href="/admin/templates" class="list-group-item list-group-item-action">📁 템플릿</a>
+                <a href="/admin/logs" class="list-group-item list-group-item-action">📜 로그</a>
+                <a href="/admin/export" class="list-group-item list-group-item-action">⬇️ 다운로드</a>
+            </div>
+        </div>
+
+        <div class="col-md-10">
+            <!-- ✅ 본문 컨텐츠 삽입 -->
+            <div th:insert="${content}"></div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll(".model-card").forEach(card => {
+            card.addEventListener("click", function () {
+                const url = this.dataset.url;
+                if (url) {
+                    location.href = url;
+                }
+            });
+        });
+    });
+</script>
+
+</body>
+</html>

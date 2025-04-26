@@ -1,0 +1,70 @@
+plugins {
+	id 'java'                                         // Java 플러그인
+	id 'org.springframework.boot' version '3.4.4'     // Spring Boot 플러그인
+	id 'io.spring.dependency-management' version '1.1.7' // 의존성 버전 관리
+	id 'org.hibernate.orm' version '6.6.11.Final'     // Hibernate ORM 기능 확장
+	id 'org.graalvm.buildtools.native' version '0.10.6' // 네이티브 이미지용 (선택)
+}
+
+group = 'com.mcp'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21) // 자바 21 사용
+	}
+}
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	mavenCentral() // 라이브러리 중앙 저장소
+}
+
+dependencies {
+	// ✅ 핵심 Spring Boot 기능
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'     // 상태 모니터링
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'     // JPA + Hibernate
+	implementation 'org.springframework.boot:spring-boot-starter-validation'   // javax.validation
+	implementation 'org.springframework.boot:spring-boot-starter-web'          // REST API
+
+	// ✅ View 템플릿
+	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'    // Thymeleaf
+
+	// ✅ Swagger 문서 자동화 (SpringDoc)
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0'
+
+	// ✅ 개발 편의 기능
+	developmentOnly 'org.springframework.boot:spring-boot-devtools' // 자동 리로드
+	runtimeOnly 'com.h2database:h2' // 인메모리 H2 DB
+
+	// ✅ 빌드 & 어노테이션
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+	annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor' // @ConfigurationProperties
+
+	// ✅ 테스트 관련
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	// ✅ .env 파일을 Spring Boot 환경 변수로 반영
+	implementation 'me.paulschwarz:spring-dotenv:2.2.0' // Spring 환경변수로 자동 주입
+	implementation 'io.github.cdimascio:dotenv-java:3.0.0' // .env 파일 읽기
+
+	// MY SQL
+	implementation 'mysql:mysql-connector-java:8.0.33'
+}
+
+hibernate {
+	enhancement {
+		enableAssociationManagement = true
+	}
+}
+
+tasks.named('test') {
+	useJUnitPlatform() // JUnit5 사용
+}
