@@ -30,7 +30,7 @@ src
 
 기능	설명
 LogEmbeddingMetadata	       프롬프트/쿼리/결과 데이터를 로그 기반으로 저장
-ContextEmbeddingMetadata    페르소나/상황/역할 등 맥락 정보를 JSON으로 저장
+ContextEmbeddingMetadata       페르소나/상황/역할 등 맥락 정보를 JSON으로 저장
 EmbeddingBackfillService   	누락된 벡터화 대상 메타데이터를 자동 생성
 EmbeddingScheduler         	백필 서비스 1시간마다 자동 실행 (@Scheduled)
 Admin UI	/admin/*           페이지로 관리자 기능 제공 예정
