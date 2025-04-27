@@ -13,7 +13,7 @@ public class McpServerApplication {
 
 		SpringApplication.run(McpServerApplication.class, args);
 
-
+// 코드 리뷰테스트
 	}
 
 }
