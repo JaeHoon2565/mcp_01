@@ -1,0 +1,25 @@
+name: Auto Create PR
+
+on:
+  push:
+    branches:
+      - feat/**
+      - fix/**
+      - refactor/**
+      - hotfix/**
+
+jobs:
+  create-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create Pull Request
+        uses: devops-infra/action-pull-request@v0.5.1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          source_branch: ${{ github.ref_name }}
+          target_branch: dev   # <-- 여기를 dev로 고정
+          title: "Auto PR: ${{ github.ref_name }} -> dev"
+          body: "자동 생성된 PR입니다."
