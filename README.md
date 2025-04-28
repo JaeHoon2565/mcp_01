@@ -84,23 +84,26 @@ Embedding Metadata History 테이블 추가 고려
 
 ✅ 목표: 신뢰도 높고 품질 관리 가능한 LLM 기반 시스템 완성
 
-🗂 기술 스택 (계획 포함)
+ 기술 스택 (계획 포함)
 
 구분	스택
-백엔드 서버	Spring Boot 3.x
-데이터베이스	MySQL, MongoDB Atlas
-벡터 DB	Weaviate, Qdrant
-유사도 검색	Cosine Similarity, Inner Product
-임베딩 모델	Groq API, OpenAI API, Huggingface
-모니터링	Prometheus, Grafana
-알림 시스템	Slack, Discord Webhook
+백엔드 서버	     Spring Boot 3.x
+데이터베이스	    MySQL, MongoDB Atlas
+벡터            DB	Weaviate, Qdrant
+유사도 검색	     Cosine Similarity, Inner Product
+임베딩 모델	     Groq API, OpenAI API, Huggingface
+모니터링	        Prometheus, Grafana
+알림 시스템	    Slack, Discord Webhook
+
+
 📄 요약
 
-단계	주요 목표	키워드
-현재	임베딩 파이프라인 구축	Spring Boot, MongoDB
-단기	벡터DB 연동 및 검색 기능 추가	Weaviate, Qdrant, 유사도 검색
-중장기	RAG + 품질 모니터링 시스템 고도화	RAG, Prometheus, 다중 임베딩 지원
-📌 추가 메모
+단계	       주요 목표	                             키워드
+현재	    임베딩 파이프라인 구축	               Spring Boot, MongoDB
+단기	    벡터DB 연동 및 검색 기능 추가	       Weaviate, Qdrant, 유사도 검색
+중장기	   RAG + 품질 모니터링 시스템 고도화	   RAG, Prometheus, 다중 임베딩 지원
+
+ 추가 메모
 본 프로젝트는 Spring Boot 기반으로 임베딩/메타데이터 관리를 자동화하며,
 이후 유사도 검색 및 RAG 기반 LLM 품질 향상을 목표로 합니다.
 
