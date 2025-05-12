@@ -1,0 +1,138 @@
+name: Gemini Code Review
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'src/**'
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  gemini-review:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+
+      - name: Install dependencies
+        run: |
+          npm install @google/generative-ai
+
+      - name: Generate git diff (Pull Request)
+        if: github.event_name == 'pull_request'
+        run: |
+          git fetch origin ${{ github.event.pull_request.base.ref }}
+          git diff --unified=0 origin/${{ github.event.pull_request.base.ref }} > diff.txt
+          echo "EVENT_TYPE=pull_request" >> $GITHUB_ENV
+          echo "${{ github.event.pull_request.title }}" > pr_title.txt
+          echo "${{ github.event.pull_request.body }}" > pr_body.txt
+
+      - name: Generate git diff (Push)
+        if: github.event_name == 'push'
+        run: |
+          git diff --unified=0 HEAD^ HEAD > diff.txt
+          echo "EVENT_TYPE=push" >> $GITHUB_ENV
+
+      - name: Run Gemini-1.5-flash Code Review
+        id: gemini_review
+        uses: actions/github-script@v7
+        continue-on-error: true
+        with:
+          script: |
+            const fs = require('fs');
+            const diff_output = fs.readFileSync('diff.txt', 'utf8');
+            let pr_title = '';
+            let pr_body = '';
+            if (fs.existsSync('pr_title.txt')) {
+              pr_title = fs.readFileSync('pr_title.txt', 'utf8');
+            }
+            if (fs.existsSync('pr_body.txt')) {
+              pr_body = fs.readFileSync('pr_body.txt', 'utf8');
+            }
+
+            const { GoogleGenerativeAI } = require('@google/generative-ai');
+            const genAI = new GoogleGenerativeAI('${{ secrets.GEMINI_API_KEY }}');
+            const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+
+            async function callAI(content) {
+              const result = await model.generateContent(content);
+              const response = await result.response;
+              return response.text();
+            }
+
+            let prompt = `당신은 시니어 엔지니어입니다. 한국어로 PR 코드를 리뷰하고, 각 변경사항에 대해 기능 설명, 문제점, 개선점을 제안하세요. 중요도를 HIGH, MEDIUM, LOW로 분류하고 JSON 배열로 출력하세요.
+            
+            PR 제목: ${pr_title}
+            PR 본문: ${pr_body}
+
+            <git diff>${diff_output}</git diff>
+
+            Output format:
+            [{"path":"filepath","line":linenumber,"text":"comment","priority":"HIGH|MEDIUM|LOW","side":"RIGHT"}]`;
+
+            // diff가 너무 크면 잘라서 처리
+            const chunks = [];
+            const chunkSize = 7000;
+            for (let i = 0; i < prompt.length; i += chunkSize) {
+              chunks.push(prompt.substring(i, i + chunkSize));
+            }
+
+            let fullText = '';
+            for (const chunk of chunks) {
+              fullText += await callAI(chunk);
+            }
+
+            fs.writeFileSync('review_result.txt', fullText);
+
+      - name: Add Pull Request Comments
+        if: env.EVENT_TYPE == 'pull_request'
+        run: |
+          jq '.' review_result.txt > formatted_review.json || true
+          if jq -e . >/dev/null 2>&1 < formatted_review.json; then
+            comments=$(jq -c 'sort_by(.priority) | reverse' formatted_review.json)
+            echo "comments=$comments" >> $GITHUB_ENV
+          else
+            echo "comments=[]" >> $GITHUB_ENV
+          fi
+
+      - name: Post PR review comments
+        if: env.EVENT_TYPE == 'pull_request'
+        uses: nbaztec/add-pr-review-comment@v1.0.7
+        with:
+          comments: ${{ env.comments }}
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          allow-repeats: false
+
+      - name: Display review results
+        if: env.EVENT_TYPE == 'push'
+        run: |
+          echo "Gemini Code Review Summary:"
+          cat review_result.txt
+
+      - name: Upload review results
+        if: env.EVENT_TYPE == 'push'
+        uses: actions/upload-artifact@v4
+        with:
+          name: gemini-code-review
+          path: review_result.txt
+
+      - name: Add 'needs-review' label to PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            github.rest.issues.addLabels({
+              owner: owner,
+              repo: repo,
+              issue_number: context.issue.number,
+              labels: ['needs-review']
+            })
